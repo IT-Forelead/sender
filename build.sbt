@@ -1,4 +1,5 @@
 import Dependencies.*
+import DockerImagePlugin.*
 
 ThisBuild / version := "0.1.0"
 
@@ -62,12 +63,16 @@ lazy val root = project
   )
   .settings(
     libraryDependencies ++=
+      Libraries.Cats.all ++
       Dependencies.io.circe.all ++
         org.http4s.all ++
         eu.timepit.refined.all ++
         com.github.pureconfig.all ++
         com.softwaremill.sttp.all ++
         Seq(
+          Libraries.mailer,
           ch.qos.logback,
         )
   )
+  .settings(DockerImagePlugin.serviceSetting("sender"))
+  .enablePlugins(DockerImagePlugin, JavaAppPackaging, DockerPlugin)

@@ -1,0 +1,21 @@
+version: '3.9'
+services:
+  esender:
+    restart: always
+    container_name: esender
+    hostname: esender
+    image: email-sender:latest
+    ports:
+      - "7777:8000"
+    environment:
+      ROOT_PATH: /opt/docker
+      APP_ENV: prod
+      TZ: "Asia/Tashkent"
+    volumes:
+      - "/srv/logs/esender/:/opt/docker/logs/"
+      - "/srv/conf/esender/:/opt/docker/conf/"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: '1G'

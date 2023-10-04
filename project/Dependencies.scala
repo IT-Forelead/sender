@@ -11,9 +11,23 @@ object Dependencies {
     lazy val log4cats = "2.5.0"
     lazy val pureconfig = "0.17.2"
     lazy val sttp = "3.7.2"
+    lazy val `cats-retry` = "3.1.0"
+    lazy val mailer = "1.4.7"
   }
   trait LibGroup {
     def all: Seq[ModuleID]
+  }
+
+  object Libraries {
+    object Cats extends LibGroup {
+      lazy val retry: ModuleID = "com.github.cb372" %% "cats-retry"  % Versions.`cats-retry`
+      lazy val core: ModuleID = "org.typelevel"     %% "cats-core"   % Versions.cats
+      lazy val effect: ModuleID = "org.typelevel"   %% "cats-effect" % Versions.`cats-effect`
+      def all: Seq[ModuleID] = Seq(core, retry, effect)
+    }
+
+    lazy val mailer = "javax.mail" % "mail" % Versions.mailer
+
   }
   object com {
     object github {
