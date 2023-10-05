@@ -27,7 +27,7 @@ object HttpServer {
     ): NonEmptyList[HttpRoutes[F]] =
     NonEmptyList
       .of[HttpRoutes[F]](
-        SenderRouters[F](env.mailer).routes
+        SenderRouters[F](env.mailer, env.config.monitoringMailer).routes
       )
 
   private val CorsConfig: CORSPolicy =

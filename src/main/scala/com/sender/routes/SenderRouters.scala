@@ -6,7 +6,7 @@ import cats.implicits.catsSyntaxApplicativeError
 import cats.implicits.catsSyntaxOptionId
 import cats.implicits.toFlatMapOps
 import com.sender.domain.Customer
-import com.sender.utils.Mailer
+import com.sender.utils._
 import com.sender.utils.data.Content
 import com.sender.utils.data.Email
 import com.sender.utils.data.Text
@@ -17,7 +17,10 @@ import org.http4s.circe.JsonDecoder
 import org.http4s.circe.toMessageSyntax
 import org.http4s.dsl.Http4sDsl
 
-final case class SenderRouters[F[_]: Sync: JsonDecoder](mailer: Mailer[F]) extends Http4sDsl[F] {
+final case class SenderRouters[F[_]: Sync: JsonDecoder](
+    mailer: Mailer[F],
+    config: MailerConfig,
+  ) extends Http4sDsl[F] {
   val routes: HttpRoutes[F] =
     HttpRoutes.of[F] {
 
@@ -27,27 +30,21 @@ final case class SenderRouters[F[_]: Sync: JsonDecoder](mailer: Mailer[F]) exten
           .attempt
           .flatMap {
             case Right(customer) =>
+              val email = Email(
+                from = config.username,
+                subject = NonEmptyString.unsafeFrom("Demo olish so'rovi"),
+                content = Content(
+                  text = Text(
+                    NonEmptyString.unsafeFrom(
+                      s"${customer.fullName} ismli mijoz ${customer.companyName} kompaniyasi uchun ${customer.system}" +
+                        s" platformasidan demo versiya olmoqchi. Aloqa uchun telefon raqami ${customer.phone}"
+                    )
+                  ).some
+                ),
+                to = NonEmptyList.fromListUnsafe(config.recipients),
+              )
               mailer
-                .send(
-                  Email(
-                    from = NonEmptyString.unsafeFrom("surojiddin@it-forelead.uz"),
-                    subject = NonEmptyString.unsafeFrom("Demo olish so'rovi"),
-                    content = Content(
-                      text = Text(
-                        NonEmptyString.unsafeFrom(
-                          s"${customer.fullName} ismli mijoz ${customer.companyName} kompaniyasi uchun ${customer.system}" +
-                            s" platformasidan demo versiya olmoqchi. Aloqa uchun telefon raqami ${customer.phone}"
-                        )
-                      ).some
-                    ),
-                    to = NonEmptyList.fromListUnsafe(
-                      List(
-                        NonEmptyString.unsafeFrom("isurojiddin@gmail.com"),
-                        NonEmptyString.unsafeFrom("shomoyxhacker007@mail.ru"),
-                      )
-                    ),
-                  )
-                )
+                .send(email)
                 .flatMap(_ => Ok("Email notification has been sent!"))
             case Left(_) => BadRequest("Email notification has been not sent!")
           }
